@@ -17,6 +17,16 @@
 # Lista de reglas ordenadas por formato
 # Cada regla
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--path',
+			required=True,
+			action='store',
+			dest='path',
+			help='Path to directory where files to be organized are located')
+args = parser.parse_args()
+path = args.path
+
 from os import listdir #List contents of a directory
 import os
 from stat import *
@@ -31,8 +41,9 @@ current_time_date = datetime.datetime.fromtimestamp(current_time_epoch)
 
 print("Current date is", current_time_date, "(" + str(current_time_epoch) + ")")
 
-for f in listdir("."):
-    f_stat = os.stat(f)
+for f in listdir(path):
+    f_path = path +'/'+ f
+    f_stat = os.stat(f_path)
     print("\nFile:", f + "...")
     if S_ISREG(f_stat.st_mode):
         print("Is a regular file")
