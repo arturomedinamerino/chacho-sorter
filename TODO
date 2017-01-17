@@ -1,0 +1,16 @@
+# Rule parser
+## Time rules
+## Size rules
+
+# Create list of rules
+## Specify rule format
+
+# Obtain relevant file information
+## stat
+## file
+
+# Determine directory where will chacho be executed
+## Configuration file?
+## Command line?
+
+# Recursive? Or only in one certain directory?
