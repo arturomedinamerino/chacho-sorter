@@ -108,8 +108,6 @@ def parse_relational_operator(operator):
                               'biggereq',
                               'bigger']
 
-    print(operator.lower())
-
     if operator.lower() in relation_operators_def:
         relational_operator = operator.lower()
     else:
@@ -264,8 +262,6 @@ def config_parser(rules_file):
                         if defining_rule_flag == True:
                             defining_rule_flag = False
                             rule_list.append(new_rule)
-
-                            print(new_rule)
 
                             rule_id += 1
                             new_rule = {    'id'   : rule_id,
