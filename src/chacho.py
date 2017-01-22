@@ -290,7 +290,7 @@ def config_parser(rules_file):
     except FileNotFoundError:
         print("Error, could not open file '", rules_parser, "'")
 
-    return 0
+    return rule_list
 
 def main():
     config_parser(rules_config)
