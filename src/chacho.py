@@ -5,8 +5,14 @@ parser.add_argument('-p', '--path',
 			action='store',
 			dest='path',
 			help='Path to directory where files to be organized are located')
+parser.add_argument('-r', '--rules',
+			required=True,
+			action='store',
+                        dest='rules_config',
+			help='Path to configuration file where rules are defined')
 args = parser.parse_args()
 path = args.path
+rules_config = args.rules_config
 
 from os import listdir #List contents of a directory
 import os
@@ -291,7 +297,7 @@ def config_parser(rules_file):
     return 0
 
 def main():
-    config_parser("./test.cfg")
+    config_parser(rules_config)
 
 if __name__ == '__main__':
         sys.exit(main())
