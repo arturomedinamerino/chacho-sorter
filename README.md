@@ -23,10 +23,14 @@ rule behaviour
     * *extension*: filename extension, e.g. "txt", "png", etc.
     * *format*: file format, as provided by the 'file' utility
 
+### destination
+
+* It indicates to which directory will the target be moved
+
 ### action
 
 * *remove*: remove file from system
-* *move*: move to another directory. This requires "directory" option to be
+* *move*: move to another directory. This requires "destination" field to be
   set
 * *ignore*: ignore this file.
 
