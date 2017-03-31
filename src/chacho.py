@@ -159,7 +159,8 @@ def parse_time_properties(condition):
     r = re.findall("\w+", condition)
     if len(r) >= 1:
         relational_operator = parse_relational_operator(r[3])
-        parsed_condition = {'property1' : r[0].lower(),
+        parsed_condition = { 'type'      : 'time',
+                             'property1' : r[0].lower(),
                              'property2' : r[5].lower(),
                              'quantity'  : total_time,
                              'relational_operator' : relational_operator}
@@ -208,8 +209,9 @@ def parse_size_properties(condition):
     if len(r) >= 1:
         relational_operator = parse_relational_operator(r[2])
 
-        parsed_condition = {'quantity'  : total_size,
-                             'relational_operator' : relational_operator}
+        parsed_condition = {'type'      : 'size',
+                            'quantity'  : total_size,
+                            'relational_operator' : relational_operator}
 
     return parsed_condition
 
@@ -292,8 +294,160 @@ def config_parser(rules_file):
 
     return rule_list
 
+
+def get_current_time():
+
+    current_time_epoch = time.time()
+    current_time_date = datetime.datetime.fromtimestamp(current_time_epoch)
+
+    sys_time = { 'epoch' : current_time_epoch,
+                 'date'  : current_time_date}
+
+    return sys_time
+
+def search_rule(f_name, rule_list):
+    found_rule = None
+    for rule in rule_list:
+        if rule['type'] == "regex":
+            r = re.findall(rule['target'], f_name['name'])
+        elif rule['type'] == "extension":
+            r = re.findall(".*\." + rule['target'], f_name['name'])
+        # TODO file format, as provided by the 'file' utility
+        else:
+            continue
+
+        if len(r) == 1:
+            found_rule = rule
+            break
+    return found_rule
+
+def compare_two_quantities(q1, q2, quantity, relational_operator):
+    meets_condition = False
+    if relational_operator == "smaller":
+        if q1 < (q2 - quantity):
+            meets_condition = True
+    elif relational_operator == "smallereq":
+        if q1 <= (q2 - quantity):
+            meets_condition = True
+    elif relational_operator == "equal":
+        if q1 == q2:
+            meets_condition = True
+    elif relational_operator == "biggereq":
+        if (q1 - quantity) >= q2:
+            meets_condition = True
+    elif relational_operator == "bigger":
+        if (q1 - quantity) >= q2:
+            meets_condition = True
+    else:
+        print("Unknown operator")
+        #TODO raise an exception
+        pass
+
+    return meets_condition
+
+def get_time_property(f_name, property_type):
+    f_stat = os.stat(f_name['full_path'])
+
+    sys_time = get_current_time()
+
+    f_last_access_epoch = f_stat.st_atime
+    f_last_metadata_epoch = f_stat.st_ctime
+    f_last_content_epoch = f_stat.st_mtime
+
+
+    if property_type == 'modification':
+        p = f_last_metadata_epoch
+    elif property_type == 'access':
+        p = f_last_access_epoch
+    elif property_type == 'metachange':
+        p = f_last_metadata_epoch
+    elif property_type == 'currentdate':
+        p = sys_time['epoch']
+    else:
+        #TODO raise an exception
+        pass
+
+
+    return p
+
+def check_time_condition(f_name, condition):
+    meets_condition = False
+    p1 = get_time_property(f_name, condition['property1'])
+    p2 = get_time_property(f_name, condition['property2'])
+
+    meets_condition = compare_two_quantities(p1,
+                                             p2,
+                                             condition['quantity'],
+                                             condition['relational_operator'])
+
+    return meets_condition
+
+def check_size_condition(f_name, condition):
+    meets_condition = False
+    f_stat = os.stat(f_name['full_path'])
+    f_size = f_stat.st_size
+
+    meets_condition = compare_two_quantities(f_size,
+                                             condition['quantity'],
+                                             0,
+                                             condition['relational_operator'])
+    return meets_condition
+
+def check_rule_conditions(f_name, rule):
+    meets_all = True
+    for condition in rule['condition_list']:
+        if condition['type'] == 'size':
+            meets_condition = check_size_condition(f_name, condition)
+
+        elif condition['type'] == 'time':
+            meets_condition = check_time_condition(f_name, condition)
+        else:
+            print("Unknown condition type")
+            # TODO: rise an error
+            continue
+
+        meets_all = meets_all and meets_condition
+        if meets_all == False:
+            break
+
+    return meets_all
+
+def apply_rules(rule_list):
+
+    for f in listdir(path):
+        f_path = path +'/'+ f
+        f_stat = os.stat(f_path)
+
+        f_name = { 'name'      : f,
+                   'full_path' : f_path}
+
+        print("\nFile:", f + "...")
+        if S_ISREG(f_stat.st_mode):
+            print("Is a regular file")
+            rule = search_rule(f_name, rule_list)
+            if rule is not None:
+                print("There are rule for this type of file")
+                meets_all = check_rule_conditions(f_name, rule)
+            else:
+                continue
+
+            if not os.path.exists(path + "/foo"):
+                os.makedirs(path + "/foo")
+
+            if meets_all == True:
+                shutil.copy(f_name['full_path'], path + "/foo/" + f)
+
+        elif S_ISDIR(f_stat.st_mode):
+            print("Is a directory. Leave it alone")
+        else:
+            print("Is neither a regular file nor a directory. Should probably \
+                    leave it alone")
+
+
 def main():
-    config_parser(rules_config)
+    rule_list = config_parser(rules_config)
+    apply_rules(rule_list)
+    return 0
 
 if __name__ == '__main__':
         sys.exit(main())
