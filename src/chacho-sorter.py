@@ -296,6 +296,8 @@ def config_parser(rules_file):
 
 
 def get_current_time():
+    """Obtain current system time in two formats: epoch and human-readable
+    format"""
 
     current_time_epoch = time.time()
     current_time_date = datetime.datetime.fromtimestamp(current_time_epoch)
@@ -322,6 +324,8 @@ def search_rule(f_name, rule_list):
     return found_rule
 
 def compare_two_quantities(q1, q2, quantity, relational_operator):
+    """Compare two given quantities, q1 and q2, and determine if the difference
+    between them is at least 'quantity'"""
     meets_condition = False
     if relational_operator == "smaller":
         if q1 < (q2 - quantity):
