@@ -1,6 +1,6 @@
 # chacho-sorter: Sort files based on their characteristics
 
-This is a file sorter/organizer written in Python. The implementation is
+This is a file sorter/organizer written in Python for learning purposes. The implementation is
 still naive, but the basic principles are already laid down.
 
 # chacho-sorter rule format
